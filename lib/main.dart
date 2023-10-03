@@ -1,31 +1,41 @@
-import 'package:block_for_managing_state/cubit/user_cubit.dart';
-import 'package:block_for_managing_state/cubit/user_cubit_state.dart';
-import 'package:block_for_managing_state/model/user_model.dart';
-import 'package:block_for_managing_state/service/api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc/bloc.dart';
+import 'dart:math' as math show Random;
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-    MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => UserCubit(apiService: ApiService()))
-        ], 
-        child: MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HomePage(),
-    ));
+    );
   }
 }
 
+const names = [
+  'Foo',
+  'Bar',
+  'Baz',
+  'Shakila',
+  'Ayesha',
+  'Awal',
+];
 
+extension RandomElement<T> on Iterable<T> {
+  T getRandomElement() => elementAt(math.Random().nextInt(length));
+}
+
+class NamesCubit extends Cubit<String?> {
+  NamesCubit() : super(null);
+
+  void pickRandomName() => emit(names.getRandomElement());
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,39 +45,54 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final textStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold, );
+  late final NamesCubit cubit;
+
   @override
   void initState() {
     super.initState();
-    context.read<UserCubit>().getAllUserList();
+    cubit = NamesCubit();
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+    cubit.close();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      appBar: AppBar(
-        title: Text("Cubit API Calling"),
-      ),
-      body: BlocBuilder<UserCubit, UserCubitState>(
-        builder: (context, state){
-          if(state is UserCubitLoading){
-            return Center(child: CircularProgressIndicator(),);
-          } else if(state is UserCubitDataFetchingError){
-            return Center(child: Text(state.errorMessage.toString()),);
-          } else if(state is UserCubitDataLoaded){
-            return ListView.builder(
-                itemCount: state.userList.length,
-                itemBuilder: (context, index){
-                  UserModel userModel = state.userList[index];
-              return ListTile(
-                leading: Text(userModel.id.toString()),
-                title: Text(userModel.name.toString()),
-              );
-            });
-          }else{
-            return Text("Unknown error occured");
-          }
-        },
-      )
-    );
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Home Page"),
+        ),
+        body: Center(
+          child: StreamBuilder<String?>(
+            stream: cubit.stream,
+            builder: (context, snapshot) {
+              final button = TextButton(
+                  onPressed: () => cubit.pickRandomName(),
+                  child: const Text("Pick a Random name"));
+
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return button;
+                case ConnectionState.waiting:
+                  return button;
+                case ConnectionState.active:
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(snapshot.data ?? ""),
+                      button,
+                    ],
+                  );
+                case ConnectionState.done:
+                  return SizedBox();
+
+              }
+            },
+          ),
+        ));
   }
 }
