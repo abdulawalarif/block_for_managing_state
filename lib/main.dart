@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
-import 'dart:math' as math show Random;
 
 void main() {
   runApp(const MyApp());
@@ -18,24 +20,69 @@ class MyApp extends StatelessWidget {
   }
 }
 
-const names = [
-  'Foo',
-  'Bar',
-  'Baz',
-  'Shakila',
-  'Ayesha',
-  'Awal',
-];
-
-extension RandomElement<T> on Iterable<T> {
-  T getRandomElement() => elementAt(math.Random().nextInt(length));
+@immutable
+abstract class LoadAction {
+  const LoadAction();
 }
 
-class NamesCubit extends Cubit<String?> {
-  NamesCubit() : super(null);
-
-  void pickRandomName() => emit(names.getRandomElement());
+@immutable
+class LoadPersonsAction implements LoadAction {
+  final PersonUrl url;
+  const LoadPersonsAction({required this.url}) : super();
 }
+
+enum PersonUrl {
+  persons1,
+  persons2,
+}
+
+extension UrlString on PersonUrl {
+  String get urlString {
+    switch (this) {
+      case PersonUrl.persons1:
+        return 'http://127.0.0.1:5500/api/persons1.json';
+      case PersonUrl.persons2:
+        return 'http://127.0.0.1:5500/api/persons2.json';
+    }
+  }
+}
+
+@immutable
+class Person {
+  final String name;
+  final int age;
+
+  const Person({
+    required this.name,
+    required this.age,
+  });
+
+  Person.fromJson(Map<String, dynamic> json)
+      : name = json['name'] as String,
+        age = json['age'] as int;
+}
+
+Future<Iterable<Person>> getPersons(String url) => HttpClient()
+.getUrl(Uri.parse(url))
+.then((req) =>req.close())
+.then((response) => response.transform(utf8.decoder).join())
+.then((str) => json.decode(str) as List<dynamic>)
+.then((list) => list.map((e) => Person.fromJson(e)));
+
+@immutable
+class FetchResult {
+   final Iterable<Person> persons;
+   final isRetrievedFromCache;
+   const FetchResult({
+    required this.persons,
+    required this.isRetrievedFromCache,
+   }); 
+
+   @override
+   String toString()=>'FetchResult (isRetrivedFromCache = $isRetrievedFromCache, persons = $persons)';
+
+}
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -45,54 +92,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final NamesCubit cubit;
-
   @override
   void initState() {
     super.initState();
-    cubit = NamesCubit();
   }
 
   @override
   void dispose() {
     super.dispose();
-    cubit.close();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Home Page"),
-        ),
-        body: Center(
-          child: StreamBuilder<String?>(
-            stream: cubit.stream,
-            builder: (context, snapshot) {
-              final button = TextButton(
-                  onPressed: () => cubit.pickRandomName(),
-                  child: const Text("Pick a Random name"));
-
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                  return button;
-                case ConnectionState.waiting:
-                  return button;
-                case ConnectionState.active:
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(snapshot.data ?? ""),
-                      button,
-                    ],
-                  );
-                case ConnectionState.done:
-                  return SizedBox();
-
-              }
-            },
-          ),
-        ));
+      appBar: AppBar(
+        title: Text("Home Page"),
+      ),
+      body: Center(child: Text("Hello World")),
+    );
   }
 }
