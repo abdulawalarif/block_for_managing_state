@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,9 +13,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: BlocProvider(
+        create: (_) => PersonsBloc(),
+        child: const HomePage(),
+      ),
     );
   }
 }
@@ -96,11 +100,18 @@ class PersonsBloc extends Bloc<LoadAction, FetchResult?> {
       } else {
         final persons = await getPersons(url.urlString);
         _cache[url] = persons;
-        final result =
-            FetchResult(persons: persons, isRetrievedFromCache: false,);
+        final result = FetchResult(
+          persons: persons,
+          isRetrievedFromCache: false,
+        );
+        emit(result);
       }
     });
   }
+}
+
+extension Subscript<T> on Iterable<T> {
+  T? operator [](int index) => length > index ? elementAt(index) : null;
 }
 
 class HomePage extends StatefulWidget {
@@ -127,7 +138,50 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text("Home Page"),
       ),
-      body: Center(child: Text("Hello World")),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              TextButton(
+                  onPressed: () {
+                    context
+                        .read<PersonsBloc>()
+                        .add(const LoadPersonsAction(url: PersonUrl.persons1));
+                  },
+                  child: Text("Load json #1")),
+              TextButton(
+                  onPressed: () {
+                    context
+                        .read<PersonsBloc>()
+                        .add(const LoadPersonsAction(url: PersonUrl.persons2));
+                  },
+                  child: Text("Load json #2")),
+            ],
+          ),
+          BlocBuilder<PersonsBloc, FetchResult?>(
+              buildWhen: (perviousResult, currentResult){
+                return perviousResult?.persons != currentResult?.persons;
+              },
+
+            builder: ((context, fetchResult) {
+              final persons = fetchResult?.persons;
+              if(persons == null){
+                return SizedBox();
+              }
+            return Expanded(
+                  child: ListView.builder(
+                    itemCount: persons.length,
+                    itemBuilder: (context, index) {
+                      final person = persons[index]!;
+                      return ListTile(
+                        title: Text(person.name),
+                      );
+                    },
+                  ),
+                );
+          }))
+        ],
+      ),
     );
   }
 }
