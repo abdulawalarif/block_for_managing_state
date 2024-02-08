@@ -15,6 +15,6 @@ typedef PersonLoader = Future<Iterable<Person>> Function(String url);
 class LoadPersonsAction implements LoadAction {
   final String url;
   final PersonLoader personLoader;
-  const LoadPersonsAction({required this.url, required this.personLoader}) : super();
+  const LoadPersonsAction({required this.url, required this.personLoader})
+      : super();
 }
-PersonLoader personLoader = PersonLoader();
