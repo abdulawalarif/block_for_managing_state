@@ -8,7 +8,7 @@ import 'bloc/bloc_actions.dart';
 import 'bloc/person.dart';
 import 'bloc/persons_bloc.dart';
 
-///1:50:24 / 11:29:38
+///2:02:16 / 11:29:38
 extension Log on Object {
   void log() => devtools.log(toString());
 }

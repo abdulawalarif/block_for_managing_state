@@ -22,14 +22,14 @@ class FetchResult {
   @override
   String toString() =>
       'FetchResult (isRetrievedFromCache = $isRetrievedFromCache, persons = $persons)';
-
-  @override
-  bool operator ==(covariant FetchResult other) =>
-      persons.isEqualToIgnoringOrdering(other.persons) &&
-      isRetrievedFromCache == other.isRetrievedFromCache;
-
-  @override
-  int get hashCode => Object.hash(persons, isRetrievedFromCache);
+  //
+  // @override
+  // bool operator ==(covariant FetchResult other) =>
+  //     persons.isEqualToIgnoringOrdering(other.persons) &&
+  //     isRetrievedFromCache == other.isRetrievedFromCache;
+  //
+  // @override
+  // int get hashCode => Object.hash(persons, isRetrievedFromCache);
 }
 
 class PersonsBloc extends Bloc<LoadAction, FetchResult?> {
