@@ -3,7 +3,7 @@ import 'package:block_for_managing_state/bloc/person.dart';
 import 'package:block_for_managing_state/bloc/persons_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'dart:ui';
+
 
 const mockedPersons1 = [
   Person(
@@ -31,6 +31,9 @@ Future<Iterable<Person>> mockedGetPersonOne(String _) =>
 
 Future<Iterable<Person>> mockedGetPersonTwo(String _) =>
     Future.value(mockedPersons2);
+
+/// For running test with command   flutter test
+
 
 void main() {
   group('Persons bloc test', () {
