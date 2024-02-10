@@ -4,7 +4,7 @@ import 'package:block_for_managing_state/bloc/persons_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 
-
+/// 2:24:30 / 11:29:38
 const mockedPersons1 = [
   Person(
     name: 'Foo',
@@ -46,7 +46,7 @@ void main() {
     blocTest<PersonsBloc, FetchResult?>(
       'Testing initial state',
       build: () => bloc,
-      verify: (bloc) => bloc.state == null,
+      verify: (bloc) => expect(bloc.state, null),
     );
 
     /// fetch mock data (personOne) and compare it with FetchResult
