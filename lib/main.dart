@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// 7:05 / 1:01:59
+/// 23:58 / 1:01:59
 void main() {
   runApp(
     MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        debugShowCheckedModeBanner: false,
-        home: HomeScreen()),
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
+      routes: {
+        '/new-contact': (context) => const NewContactView(),
+      },
+    ),
   );
 }
 
@@ -62,6 +66,61 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Text(contact.name),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context).pushNamed('/new-contact');
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class NewContactView extends StatefulWidget {
+  const NewContactView({super.key});
+
+  @override
+  State<NewContactView> createState() => _NewContactViewState();
+}
+
+class _NewContactViewState extends State<NewContactView> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Adding new contact'),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(
+              hintText: 'Enter a new contact name here.....',
+            ),
+          ),
+          TextButton(
+              onPressed: () {
+                final contact = Contact(name: _controller.text);
+                ContactBook().add(contact: contact);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add Contact'))
+        ],
       ),
     );
   }
