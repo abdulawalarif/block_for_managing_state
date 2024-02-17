@@ -51,14 +51,9 @@ class ContactBook extends ValueNotifier<List<Contact>> {
       value.length > atIndex ? value[atIndex] : null;
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
