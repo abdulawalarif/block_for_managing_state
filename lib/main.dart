@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-/// 23:58 / 1:01:59
+///20:16 / 43:10  Chapter 2 - InheritedWidget - Flutter State Management Course 💙
 void main() {
   runApp(
     MaterialApp(
@@ -10,136 +10,95 @@ void main() {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
-      routes: {
-        '/new-contact': (context) => const NewContactView(),
-      },
+      home: ApiProvider(
+        api: Api(),
+        child: const HomeScreen(),
+      ),
     ),
   );
 }
 
-class Contact {
-  final String name;
-  final String id;
-  Contact({
-    required this.name,
-  }) : id = const Uuid().v4();
-}
+class ApiProvider extends InheritedWidget {
+  Api api;
+  String uuid;
 
-class ContactBook extends ValueNotifier<List<Contact>> {
-  ContactBook._sharedInstance() : super([]);
-  static final ContactBook _shared = ContactBook._sharedInstance();
-  factory ContactBook() => _shared;
-  final List<Contact> _contacts = [];
-  int get length => value.length;
+  ApiProvider({
+    Key? key,
+    required this.api,
+    required Widget child,
+  })  : uuid = const Uuid().v4().toString(),
+        super(
+          child: child,
+          key: key,
+        );
 
-  void add({required Contact contact}) {
-    final contacts = value;
-    contacts.add(contact);
-    notifyListeners();
+  @override
+  bool updateShouldNotify(covariant ApiProvider oldWidget) {
+    return uuid != oldWidget.uuid;
   }
 
-  void remove({required Contact contact}) {
-    final contacts = value;
-    if (contacts.contains(contact)) {
-      contacts.remove(contact);
-      notifyListeners();
-    }
+  /// this is for getting the value ApiProvier have into its child widget we are gonna pass
+  static ApiProvider of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<ApiProvider>()!;
   }
-
-  Contact? contact({required int atIndex}) =>
-      value.length > atIndex ? value[atIndex] : null;
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Contact app"),
-      ),
-      body: ValueListenableBuilder(
-        valueListenable: ContactBook(),
-        builder: (context, value, child) {
-          final contacts = value as List<Contact>;
-          return ListView.builder(
-            itemCount: contacts.length,
-            itemBuilder: (context, index) {
-              final contact = contacts[index];
-              return Dismissible(
-                key: ValueKey(contact.id),
-                onDismissed: (direction) {
-                  ContactBook().remove(contact: contact);
-                },
-                child: Material(
-                  color: Colors.white,
-                  elevation: 6.0,
-                  child: ListTile(
-                    title: Text(contact.name),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.of(context).pushNamed('/new-contact');
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class NewContactView extends StatefulWidget {
-  const NewContactView({super.key});
-
-  @override
-  State<NewContactView> createState() => _NewContactViewState();
-}
-
-class _NewContactViewState extends State<NewContactView> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    _controller = TextEditingController();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class _HomeScreenState extends State<HomeScreen> {
+  ValueKey _textKey = const ValueKey<String?>(null);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Adding new contact'),
+        title: Text(ApiProvider.of(context).api.dateAndTime ?? ''),
       ),
-      body: Column(
-        children: [
-          TextField(
-            controller: _controller,
-            decoration: const InputDecoration(
-              hintText: 'Enter a new contact name here.....',
-            ),
+      body: GestureDetector(
+        onTap: () async {
+          final api = ApiProvider.of(context).api;
+          final dateAndTime = await api.getDateAndTime();
+          setState(() {
+            _textKey = ValueKey(dateAndTime);
+          });
+        },
+        child: SizedBox.expand(
+          child: Container(
+            color: Colors.white,
+            child: DateTimeWidget(key: _textKey),
           ),
-          TextButton(
-              onPressed: () {
-                final contact = Contact(name: _controller.text);
-                ContactBook().add(contact: contact);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Add Contact'))
-        ],
+        ),
       ),
     );
+  }
+}
+
+class DateTimeWidget extends StatelessWidget {
+  const DateTimeWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final api = ApiProvider.of(context).api;
+    return Text(
+      api.dateAndTime ?? 'Tap on the screen to fetch date and time',
+    );
+  }
+}
+
+class Api {
+  String? dateAndTime;
+  Future<String> getDateAndTime() {
+    return Future.delayed(
+      const Duration(seconds: 1),
+      () => DateTime.now().toIso8601String(),
+    ).then((value) {
+      dateAndTime = value;
+      return value;
+    });
   }
 }
