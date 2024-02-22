@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
+import 'dart:collection';
 
-/// Chapter 4 - InheritedNotifier and ChangeNotifier - Flutter State Management Course 💙
-///
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+
+///Chapter 5 - Provider - Flutter State Management Course 💙
+
+///22:43 / 2:15:57
 void main() {
   runApp(
     MaterialApp(
@@ -16,37 +19,47 @@ void main() {
   );
 }
 
-class SliderData extends ChangeNotifier {
-  double _value = 0.0;
-  double get value => _value;
-  set value(double newValue) {
-    if (newValue != _value) {
-      _value = newValue;
-      notifyListeners();
-    }
+class BreadCrumb {
+  bool isActive;
+  final String name;
+  String uuid;
+
+  BreadCrumb({
+    required this.isActive,
+    required this.name,
+  }) : uuid = const Uuid().v4();
+
+  void isActivate() {
+    isActive = true;
   }
+
+  @override
+  bool operator ==(covariant BreadCrumb other) {
+    return uuid == other.uuid;
+  }
+
+  @override
+  int get hashCode => uuid.hashCode;
+
+  String get title => name + (isActive ? ' > ' : '');
 }
 
-final sliderData = SliderData();
+class BreadCrumbProvider extends ChangeNotifier {
+  final List<BreadCrumb> _items = [];
 
-class SliderInheritedNotifier extends InheritedNotifier<SliderData> {
-  const SliderInheritedNotifier({
-    Key? key,
-    required SliderData sliderData,
-    required Widget child,
-  }) : super(
-          key: key,
-          notifier: sliderData,
-          child: child,
-        );
+  UnmodifiableListView<BreadCrumb> get item => UnmodifiableListView(_items);
 
-  static double of(BuildContext context) =>
-      context
-            .dependOnInheritedWidgetOfExactType<SliderInheritedNotifier>()
-            ?.notifier
-            ?.value ??
-        0.0;
+  void add(BreadCrumb breadCrumb) {
+    for (final item in _items) {
+      item.isActivate();
+    }
+    _items.add(breadCrumb);
+    notifyListeners();
+  }
 
+  void reset() {
+    _items.clear();
+  }
 }
 
 class HomePage extends StatelessWidget {
@@ -54,56 +67,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Home Page'),
-        ),
-        body: SliderInheritedNotifier(
-          sliderData: sliderData,
-          child: Builder(
-            builder: (context) {
-              return Column(
-                children: [
-                  Slider(
-                    value: SliderInheritedNotifier.of(context),
-                    onChanged: (value) {
-                      sliderData.value = value;
-                    },
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Opacity(
-                        opacity: SliderInheritedNotifier.of(context),
-                        child: Container(
-                          height: 200,
-                          color: Colors.yellow,
-                        ),
-                      ),
-                      Opacity(
-                        opacity: SliderInheritedNotifier.of(context),
-                        child: Container(
-                          height: 200,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ].expandEqually().toList(),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
+    return Scaffold(
+      body: Center(
+        child: Text("Hello world"),
       ),
     );
   }
-}
-
-extension ExpandEqually on Iterable<Widget> {
-  Iterable<Widget> expandEqually() => map(
-        (w) => Expanded(
-          child: w,
-        ),
-      );
 }
