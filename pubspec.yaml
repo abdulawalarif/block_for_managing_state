@@ -13,6 +13,7 @@ dependencies:
   bloc: ^8.1.2
   uuid: ^4.3.3
   provider: ^6.1.1
+  any_link_preview:
 dev_dependencies:
   flutter_test:
     sdk: flutter

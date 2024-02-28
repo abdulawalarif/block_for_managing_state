@@ -1,103 +1,108 @@
-import 'dart:collection';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 ///Chapter 5 - Provider - Flutter State Management Course 💙
 
-///47:36 / 2:15:57
+///1:33:22 / 2:15:57
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => BreadCrumbProvider(),
+      create: (_) => ObjectProvider(),
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         debugShowCheckedModeBanner: false,
-        home: const HomePage(),
-        routes: {
-          '/new': (context) => const NewBreadCrumbWidget(),
-        },
+        home: HomePage(),
       ),
     ),
   );
 }
 
-class BreadCrumb {
-  bool isActive;
-  final String name;
-  String uuid;
-
-  BreadCrumb({
-    required this.isActive,
-    required this.name,
-  }) : uuid = const Uuid().v4();
-
-  void isActivate() {
-    isActive = true;
-  }
+@immutable
+class BaseObject {
+  final String id;
+  final String lastUpdated;
+  BaseObject()
+      : id = const Uuid().v4(),
+        lastUpdated = DateTime.now().toIso8601String();
 
   @override
-  bool operator ==(covariant BreadCrumb other) {
-    return uuid == other.uuid;
-  }
+  bool operator ==(covariant BaseObject other) => id == other.id;
 
   @override
-  int get hashCode => uuid.hashCode;
-
-  String get title => name + (isActive ? ' > ' : '');
+  int get hashCode => id.hashCode;
 }
 
-class BreadCrumbProvider extends ChangeNotifier {
-  final List<BreadCrumb> _items = [];
+@immutable
+class ExpensiveObject extends BaseObject {}
 
-  UnmodifiableListView<BreadCrumb> get items => UnmodifiableListView(_items);
+@immutable
+class CheapObject extends BaseObject {}
 
-  void add(BreadCrumb breadCrumb) {
-    for (final item in _items) {
-      item.isActivate();
-    }
-    _items.add(breadCrumb);
-    notifyListeners();
+class ObjectProvider extends ChangeNotifier {
+  late String id;
+  late CheapObject _cheapObject;
+  late StreamSubscription _cheapObjectStreamSubs;
+  late ExpensiveObject _expensiveObject;
+  late StreamSubscription _expensiveObjectStreamSubs;
+
+  CheapObject get cheapObject => _cheapObject;
+  ExpensiveObject get expensiveObject => _expensiveObject;
+  ObjectProvider()
+      : id = const Uuid().v4(),
+        _cheapObject = CheapObject(),
+        _expensiveObject = ExpensiveObject() {
+    start();
   }
-
-  void reset() {
-    _items.clear();
-    notifyListeners();
-  }
-}
-
-class BreadCrumbsWidget extends StatelessWidget {
-  final UnmodifiableListView<BreadCrumb> breadCrumbs;
-  const BreadCrumbsWidget({
-    Key? key,
-    required this.breadCrumbs,
-  }) : super(key: key);
-
   @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      children: breadCrumbs.map(
-        (breadCrumb) {
-          return Text(
-            breadCrumb.title,
-            style: TextStyle(
-              color: breadCrumb.isActive ? Colors.blue : Colors.black,
-            ),
-          );
-        },
-      ).toList(),
+  void notifyListeners() {
+    id = const Uuid().v4();
+    super.notifyListeners();
+  }
+
+  void start() {
+    _cheapObjectStreamSubs = Stream.periodic(
+      const Duration(
+        seconds: 1,
+      ),
+    ).listen(
+      (_) {
+        _cheapObject = CheapObject();
+        notifyListeners();
+      },
+    );
+    _expensiveObjectStreamSubs = Stream.periodic(
+      const Duration(
+        seconds: 10,
+      ),
+    ).listen(
+      (_) {
+        _expensiveObject = ExpensiveObject();
+        notifyListeners();
+      },
     );
   }
+
+  void stop() {
+    _cheapObjectStreamSubs.cancel();
+    _expensiveObjectStreamSubs.cancel();
+  }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
   });
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,28 +111,32 @@ class HomePage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Consumer<BreadCrumbProvider>(
-            builder: (context, value, child) {
-              return BreadCrumbsWidget(
-                breadCrumbs: value.items,
-              );
-            },
+          const Row(
+            children: [
+              Expanded(child: CheapWidget()),
+              Expanded(child: ExpensiveWidget()),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/new');
-            },
-            child: const Text(
-              'Add new bread crumb',
-            ),
+          const Row(
+            children: [
+              Expanded(child: ObjectProviderWidget()),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              context.read<BreadCrumbProvider>().reset();
-            },
-            child: const Text(
-              'Reset',
-            ),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  context.read<ObjectProvider>().stop();
+                },
+                child: const Text('stop'),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<ObjectProvider>().start();
+                },
+                child: const Text('start'),
+              ),
+            ],
           ),
         ],
       ),
@@ -135,60 +144,65 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class NewBreadCrumbWidget extends StatefulWidget {
-  const NewBreadCrumbWidget({super.key});
-
-  @override
-  State<NewBreadCrumbWidget> createState() => _NewBreadCrumbWidgetState();
-}
-
-class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    _controller = TextEditingController();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class CheapWidget extends StatelessWidget {
+  const CheapWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add new bread crumb'),
-      ),
-      body: Column(
+    final cheapObject = context.select<ObjectProvider, CheapObject>(
+      (provider) => provider.cheapObject,
+    );
+    return Container(
+      height: 100,
+      color: Colors.yellow,
+      child: Column(
         children: [
-          TextField(
-            controller: _controller,
-            decoration: const InputDecoration(
-              hintText: 'Enter a new bread crumb here...',
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              final text = _controller.text;
-              if (text.isNotEmpty) {
-                final breadCrumb = BreadCrumb(
-                  isActive: false,
-                  name: text,
-                );
-                context.read<BreadCrumbProvider>().add(
-                      breadCrumb,
-                    );
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text(
-              'Add',
-            ),
-          ),
+          const Text('Cheap Widget'),
+          const Text('Last updated'),
+          Text(cheapObject.lastUpdated),
+        ],
+      ),
+    );
+  }
+}
+
+class ExpensiveWidget extends StatelessWidget {
+  const ExpensiveWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final expensiveObject = context.select<ObjectProvider, ExpensiveObject>(
+      (provider) => provider.expensiveObject,
+    );
+    return Container(
+      height: 100,
+      color: Colors.blue,
+      child: Column(
+        children: [
+          const Text('Expensive Widget'),
+          const Text('Last updated'),
+          Text(expensiveObject.lastUpdated),
+        ],
+      ),
+    );
+  }
+}
+
+class ObjectProviderWidget extends StatelessWidget {
+  const ObjectProviderWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final objectProvider = context.watch<ObjectProvider>();
+
+    return Container(
+      height: 100,
+      color: Colors.purple,
+      child: Column(
+        children: [
+          const Text('Object Provider Widget'),
+          const Text('ID'),
+          Text(objectProvider.id),
         ],
       ),
     );
