@@ -14,6 +14,7 @@ dependencies:
   uuid: ^4.3.3
   provider: ^6.1.1
   any_link_preview:
+  flutter_hooks: ^0.20.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
