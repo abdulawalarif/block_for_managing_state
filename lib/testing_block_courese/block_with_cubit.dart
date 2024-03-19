@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'dart:math' as math show Random;
-
 import 'package:flutter/material.dart';
 
 const names = [
@@ -47,7 +46,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-
         body: Center(
           child: StreamBuilder(
             stream: cubit.stream,
@@ -65,16 +63,16 @@ class _HomePageState extends State<HomePage> {
                 case ConnectionState.waiting:
                   return button;
                 case ConnectionState.active:
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                  Text(snapshot.data.toString()),
-                  button,
-                  ],
-                );
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(snapshot.data.toString()),
+                      button,
+                    ],
+                  );
                 case ConnectionState.done:
-                return const SizedBox();
+                  return const SizedBox();
               }
             },
           ),
