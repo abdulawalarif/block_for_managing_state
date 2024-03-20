@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 ///1:00:28 / 11:29:38
 
 void main() {
   runApp(
-    const MaterialApp(
+    MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: BlocProvider(
+        create: (_) => PersonsBloc(),
+        child: const HomePage(),
+      ),
     ),
   );
 }
@@ -85,7 +86,7 @@ class PersonsBloc extends Bloc<LoadAction, FetchResult?> {
   final Map<PersonUrl, Iterable<Person>> _cache = {};
   PersonsBloc() : super(null) {
     on<LoadPersonsAction>(
-      (event, emit) {
+      (event, emit) async {
         final url = event.url;
         if (_cache.containsKey(url)) {
           // we have the value in the cache
@@ -95,10 +96,22 @@ class PersonsBloc extends Bloc<LoadAction, FetchResult?> {
             isRetrievedFromCache: true,
           );
           emit(result);
+        } else {
+          final persons = await getPersons(url.urlString);
+          _cache[url] = persons;
+          final result = FetchResult(
+            persons: persons,
+            isRetrievedFromCache: false,
+          );
+          emit(result);
         }
       },
     );
   }
+}
+
+extension Subscript<T> on Iterable<T> {
+  T? operator [](int index) => length > index ? elementAt(index) : null;
 }
 
 class HomePage extends StatefulWidget {
@@ -111,9 +124,67 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Hello world'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home page'),
+      ),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  context.read<PersonsBloc>().add(
+                        const LoadPersonsAction(
+                          url: PersonUrl.persons1,
+                        ),
+                      );
+                },
+                child: const Text(
+                  'Load json #1',
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<PersonsBloc>().add(
+                        const LoadPersonsAction(
+                          url: PersonUrl.persons2,
+                        ),
+                      );
+                },
+                child: const Text(
+                  'Load json #2',
+                ),
+              ),
+            ],
+          ),
+          BlocBuilder<PersonsBloc, FetchResult?>(
+            buildWhen: (previousResult, currentResult) {
+              return previousResult?.persons != currentResult?.persons;
+            },
+            builder: (context, fetchResult) {
+              final persons = fetchResult?.persons;
+
+              if (persons == null) {
+                return const SizedBox();
+              }
+
+              return Expanded(
+                child: ListView.builder(
+                  itemCount: persons.length,
+                  itemBuilder: (context, index) {
+                    final person = persons[index]!;
+
+                    return ListTile(
+                      title: Text(person.name),
+                      subtitle: Text(person.age.toString()),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
