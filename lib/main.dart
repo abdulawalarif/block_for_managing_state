@@ -2,6 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer' as devtools show log;
+
+extension Log on Object {
+  void log() => devtools.log(toString());
+}
 
 ///1:00:28 / 11:29:38
 
@@ -163,6 +168,7 @@ class _HomePageState extends State<HomePage> {
               return previousResult?.persons != currentResult?.persons;
             },
             builder: (context, fetchResult) {
+              fetchResult?.log();
               final persons = fetchResult?.persons;
 
               if (persons == null) {
