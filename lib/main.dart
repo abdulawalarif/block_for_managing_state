@@ -1,8 +1,13 @@
+///1:37:35 / 11:29:38
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as devtools show log;
+
+import 'second_example/bloc/bloc_actions.dart';
+import 'second_example/bloc/person.dart';
+import 'second_example/bloc/persons_bloc.dart';
 
 extension Log on Object {
   void log() => devtools.log(toString());
@@ -32,47 +37,7 @@ Future<Iterable<Person>> getPersons(String url) => HttpClient()
     .then((str) => json.decode(str) as List<dynamic>)
     .then((list) => list.map((e) => Person.fromJson(e)));
 
-@immutable
-class FetchResult {
-  final Iterable<Person> persons;
-  final bool isRetrievedFromCache;
-  const FetchResult({
-    required this.persons,
-    required this.isRetrievedFromCache,
-  });
 
-  @override
-  String toString() =>
-      'FetchResult (isRetrievedFromCache = $isRetrievedFromCache, persons = $persons)';
-}
-
-class PersonsBloc extends Bloc<LoadAction, FetchResult?> {
-  final Map<PersonUrl, Iterable<Person>> _cache = {};
-  PersonsBloc() : super(null) {
-    on<LoadPersonsAction>(
-      (event, emit) async {
-        final url = event.url;
-        if (_cache.containsKey(url)) {
-          // we have the value in the cache
-          final cachedPersons = _cache[url]!;
-          final result = FetchResult(
-            persons: cachedPersons,
-            isRetrievedFromCache: true,
-          );
-          emit(result);
-        } else {
-          final persons = await getPersons(url.urlString);
-          _cache[url] = persons;
-          final result = FetchResult(
-            persons: persons,
-            isRetrievedFromCache: false,
-          );
-          emit(result);
-        }
-      },
-    );
-  }
-}
 
 extension Subscript<T> on Iterable<T> {
   T? operator [](int index) => length > index ? elementAt(index) : null;
@@ -100,7 +65,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   context.read<PersonsBloc>().add(
                         const LoadPersonsAction(
-                          url: PersonUrl.persons1,
+                          url: persons1Url,
+                          loader: getPersons,
                         ),
                       );
                 },
@@ -112,7 +78,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   context.read<PersonsBloc>().add(
                         const LoadPersonsAction(
-                          url: PersonUrl.persons2,
+                          url: persons2Url,
+                          loader: getPersons,
                         ),
                       );
                 },
@@ -154,3 +121,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
