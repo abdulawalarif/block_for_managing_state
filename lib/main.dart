@@ -1,10 +1,9 @@
-///1:37:35 / 11:29:38
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as devtools show log;
-
 import 'second_example/bloc/bloc_actions.dart';
 import 'second_example/bloc/person.dart';
 import 'second_example/bloc/persons_bloc.dart';
@@ -13,7 +12,7 @@ extension Log on Object {
   void log() => devtools.log(toString());
 }
 
-///1:00:28 / 11:29:38
+///2:21:25 / 11:29:38
 
 void main() {
   runApp(
@@ -28,16 +27,12 @@ void main() {
   );
 }
 
-
-
 Future<Iterable<Person>> getPersons(String url) => HttpClient()
     .getUrl(Uri.parse(url))
     .then((req) => req.close())
     .then((resp) => resp.transform(utf8.decoder).join())
     .then((str) => json.decode(str) as List<dynamic>)
     .then((list) => list.map((e) => Person.fromJson(e)));
-
-
 
 extension Subscript<T> on Iterable<T> {
   T? operator [](int index) => length > index ? elementAt(index) : null;
@@ -121,5 +116,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
