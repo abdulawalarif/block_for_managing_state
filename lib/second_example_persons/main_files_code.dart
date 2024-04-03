@@ -1,12 +1,13 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:block_for_managing_state/second_example_persons/bloc/bloc_actions.dart';
+import 'package:block_for_managing_state/second_example_persons/bloc/person.dart';
+import 'package:block_for_managing_state/second_example_persons/bloc/persons_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as devtools show log;
-import 'second_example/bloc/bloc_actions.dart';
-import 'second_example/bloc/person.dart';
-import 'second_example/bloc/persons_bloc.dart';
+
 
 extension Log on Object {
   void log() => devtools.log(toString());

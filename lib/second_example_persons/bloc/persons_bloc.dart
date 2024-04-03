@@ -1,5 +1,6 @@
-import 'package:block_for_managing_state/second_example/bloc/bloc_actions.dart';
-import 'package:block_for_managing_state/second_example/bloc/person.dart';
+
+import 'package:block_for_managing_state/second_example_persons/bloc/bloc_actions.dart';
+import 'package:block_for_managing_state/second_example_persons/bloc/person.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
