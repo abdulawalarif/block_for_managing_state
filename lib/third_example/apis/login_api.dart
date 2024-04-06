@@ -5,7 +5,6 @@ import '../model.dart';
 @immutable
 abstract class LoginApiProtocol {
   const LoginApiProtocol();
-
   Future<LoginHandle?> login({
     required String email,
     required String password,
@@ -18,7 +17,6 @@ class LoginApi implements LoginApiProtocol {
   const LoginApi._sharedInstance();
   static const LoginApi _shared = LoginApi._sharedInstance();
   factory LoginApi.instance() => _shared;
-
   @override
   Future<LoginHandle?> login({
     required String email,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-///2:21:25 / 11:29:38
+///2:54:45 / 11:29:38
 
 void main() {
   runApp(
@@ -11,6 +11,8 @@ void main() {
     ),
   );
 }
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,16 +25,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Home page',
-        ),
-      ),
-      body: const Center(
-        child: Text(
-          'Hello world!',
-        ),
+      body: Center(
+        child: Text('Hello world!'),
       ),
     );
   }
 }
+
