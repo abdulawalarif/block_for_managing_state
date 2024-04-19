@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-///git 3:18:31 / 11:29:38
-
+///git 3:41:32 / 11:29:38
 
 
 
@@ -14,8 +13,6 @@ void main() {
     ),
   );
 }
-
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,4 +31,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
