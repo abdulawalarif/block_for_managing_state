@@ -1,4 +1,5 @@
-import 'package:block_for_managing_state/third_example/strings.dart'show enterYourEmailHere;
+import 'package:block_for_managing_state/third_example/strings.dart'
+    show enterYourEmailHere;
 import 'package:flutter/material.dart';
 
 class EmailTextField extends StatelessWidget {
@@ -15,7 +16,7 @@ class EmailTextField extends StatelessWidget {
       keyboardType: TextInputType.emailAddress,
       autocorrect: false,
       decoration: const InputDecoration(
-        hintText: enterYourEmailHere, 
+        hintText: enterYourEmailHere,
       ),
     );
   }
