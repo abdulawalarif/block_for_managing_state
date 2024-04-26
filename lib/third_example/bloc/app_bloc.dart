@@ -66,7 +66,6 @@ class AppBloc extends Bloc<AppAction, AppState> {
             fetchedNotes: null,
           ),
         );
-        return;
       }
 
       // we have a valid login handle and want to fetch notes
