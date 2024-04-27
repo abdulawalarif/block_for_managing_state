@@ -6,33 +6,28 @@ import 'package:block_for_managing_state/third_example/bloc/app_state.dart';
 import 'package:block_for_managing_state/third_example/dialogs/generic_dialog.dart';
 import 'package:block_for_managing_state/third_example/dialogs/loading_screen.dart';
 import 'package:block_for_managing_state/third_example/model.dart';
+import 'package:block_for_managing_state/third_example/strings.dart';
 import 'package:block_for_managing_state/third_example/views/iterable_list_view.dart';
 import 'package:block_for_managing_state/third_example/views/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'third_example/strings.dart';
-
-///4:34:27 / 11:29:38
-
+ 
 void main() {
   runApp(
-    const MaterialApp(
+    MaterialApp(
       title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: const HomePage(),
     ),
   );
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -62,12 +57,11 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 title: loginErrorDialogTitle,
                 content: loginErrorDialogContent,
-                optionBuilder: () => {
-                  ok: true,
-                },
+                optionsBuilder: () => {ok: true},
               );
             }
-            // if we are logged in, but we have no fetched notes, fetch them now.
+
+            // if we are logged in, but we have no fetched notes, fetch them now
             if (appState.isLoading == false &&
                 appState.loginError == null &&
                 appState.loginHandle == const LoginHandle.fooBar() &&

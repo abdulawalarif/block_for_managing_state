@@ -4,6 +4,7 @@ import 'package:block_for_managing_state/third_example/apis/notes_api.dart';
 import 'package:block_for_managing_state/third_example/bloc/actions.dart';
 import 'package:block_for_managing_state/third_example/bloc/app_state.dart';
 import 'package:block_for_managing_state/third_example/model.dart';
+ 
 
 class AppBloc extends Bloc<AppAction, AppState> {
   final LoginApiProtocol loginApi;
@@ -14,8 +15,8 @@ class AppBloc extends Bloc<AppAction, AppState> {
     required this.notesApi,
   }) : super(const AppState.empty()) {
     on<LoginAction>(
-      // start loading
       (event, emit) async {
+        // start loading
         emit(
           const AppState(
             isLoading: true,
@@ -29,7 +30,6 @@ class AppBloc extends Bloc<AppAction, AppState> {
           email: event.email,
           password: event.password,
         );
-
         emit(
           AppState(
             isLoading: false,
@@ -40,40 +40,37 @@ class AppBloc extends Bloc<AppAction, AppState> {
         );
       },
     );
-
     on<LoadNotesAction>(
+      (event, emit) async {
         // start loading
-        (event, emit) async {
-      // start loading
-      emit(
-        AppState(
-          isLoading: true,
-          loginError: null,
-          loginHandle: state.loginHandle,
-          fetchedNotes: null,
-        ),
-      );
-
-      // get the login handle
-      final loginHandle = state.loginHandle;
-      if (loginHandle != const LoginHandle.fooBar()) {
-        // invalid loginHandle cannot fetch notes
         emit(
           AppState(
-            isLoading: false,
-            loginError: LoginErrors.invalidHandle,
+            isLoading: true,
+            loginError: null,
             loginHandle: state.loginHandle,
             fetchedNotes: null,
           ),
         );
-      }
+        // get the login handle
+        final loginHandle = state.loginHandle;
+        if (loginHandle != const LoginHandle.fooBar()) {
+          // invalid login handle, cannot fetch notes
+          emit(
+            AppState(
+              isLoading: false,
+              loginError: LoginErrors.invalidHandle,
+              loginHandle: loginHandle,
+              fetchedNotes: null,
+            ),
+          );
+          return;
+        }
 
-      // we have a valid login handle and want to fetch notes
-      final notes = await notesApi.getNotes(
-        loginHandle: loginHandle!,
-      );
-
-           emit(
+        // we have a valid login handle and want to fetch notes
+        final notes = await notesApi.getNotes(
+          loginHandle: loginHandle!,
+        );
+        emit(
           AppState(
             isLoading: false,
             loginError: null,
@@ -81,6 +78,7 @@ class AppBloc extends Bloc<AppAction, AppState> {
             fetchedNotes: notes,
           ),
         );
-    });
+      },
+    );
   }
 }

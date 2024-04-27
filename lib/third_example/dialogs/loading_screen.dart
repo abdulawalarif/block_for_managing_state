@@ -9,6 +9,7 @@ class LoadingScreen {
   factory LoadingScreen.instance() => _shared;
 
   LoadingScreenController? _controller;
+
   void show({
     required BuildContext context,
     required String text,
@@ -44,14 +45,12 @@ class LoadingScreen {
     final overlay = OverlayEntry(
       builder: (context) {
         return Material(
-          color: Colors.black.withAlpha(
-            150,
-          ),
+          color: Colors.black.withAlpha(150),
           child: Center(
             child: Container(
               constraints: BoxConstraints(
                 maxWidth: size.width * 0.8,
-                maxHeight: size.height * 0.0,
+                maxHeight: size.height * 0.8,
                 minWidth: size.width * 0.5,
               ),
               decoration: BoxDecoration(
@@ -74,16 +73,16 @@ class LoadingScreen {
                       ),
                       StreamBuilder<String>(
                         stream: _text.stream,
-                        builder: ((context, snapshot) {
+                        builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             return Text(
                               snapshot.data!,
                               textAlign: TextAlign.center,
                             );
                           } else {
-                            return const SizedBox();
+                            return Container();
                           }
-                        }),
+                        },
                       ),
                     ],
                   ),
@@ -94,8 +93,7 @@ class LoadingScreen {
         );
       },
     );
-
-    state.insert(overlay);
+    state?.insert(overlay);
 
     return LoadingScreenController(
       close: () {

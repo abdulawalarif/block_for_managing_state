@@ -1,6 +1,6 @@
 import 'package:block_for_managing_state/third_example/model.dart';
 import 'package:flutter/foundation.dart' show immutable;
-
+ 
 @immutable
 class AppState {
   final bool isLoading;
@@ -26,6 +26,6 @@ class AppState {
         'isLoading': isLoading,
         'loginError': loginError,
         'loginHandle': loginHandle,
-        'fetchedNotes': fetchedNotes,
+        'fetchedNotes': fetchedNotes
       }.toString();
 }
