@@ -5,7 +5,7 @@ import 'package:block_for_managing_state/third_example/bloc/app_bloc.dart';
 import 'package:block_for_managing_state/third_example/bloc/app_state.dart';
 import 'package:block_for_managing_state/third_example/dialogs/generic_dialog.dart';
 import 'package:block_for_managing_state/third_example/dialogs/loading_screen.dart';
-import 'package:block_for_managing_state/third_example/model.dart';
+import 'package:block_for_managing_state/third_example/models.dart';
 import 'package:block_for_managing_state/third_example/strings.dart';
 import 'package:block_for_managing_state/third_example/views/iterable_list_view.dart';
 import 'package:block_for_managing_state/third_example/views/login_view.dart';
